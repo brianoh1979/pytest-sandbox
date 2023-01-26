@@ -81,7 +81,7 @@ jobs:
   fail-fast-with-splitting-5-batches:
     docker:
       - image: cimg/python:3.8.5
-    parallelism: 3
+    parallelism: 2
     steps:
       - checkout
       - python/install-packages:
@@ -89,7 +89,8 @@ jobs:
       - run:
           name: run with plugin spit tests by name and set batch_count to 5
           command: | 
-            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --split-by=name --batch-count=5 --fail-fast
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run 
+--command="xargs pytest" --split-by=name --batch-count=2 --fail-fast
       - store_test_results:
           path: test-results
 workflows:
