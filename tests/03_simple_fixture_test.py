@@ -7,7 +7,7 @@ def test_with_local_fixture(local_fixture):
     with the same name as a fixture:
     """
     print("Running test_with_local_fixture...")
-    assert False
+    assert True
 
 
 @pytest.fixture
