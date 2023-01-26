@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   python: circleci/python@2.1.1
 jobs:
-  build-and-test:
+  pytest-no-fail-fast:
     docker:
       - image: cimg/python:3.8.5
     steps:
@@ -10,24 +10,95 @@ jobs:
       - python/install-packages:
           pkg-manager: pip
       - run:
-          name: list all tests
-          command: | 
-            pytest --collect-only -q | grep -e "\.py"
-      - run:
-          name:  Count tests
-          command: |
-            pytest --collect-only -q | grep -e "\.py" | wc -l
-      - run:
           name: Run tests unit tests
           command: | 
-            mkdir test-results
-            pytest --collect-only -q | grep -e "\.py" | circleci tests run  --command="xargs pytest --junitxml=test-results/junit.xml -v --"  --fail-fast  --batch-count=3 --verbose --test-results-path="test-results"
+            pytest  
+  pytest-native-fail-fast:
+    docker:
+      - image: cimg/python:3.8.5
+    parallelism: 3
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: pytest with its own native fail-fast (max-fail)
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests split | xargs pytest -x
+  fail-fast-without-splitting:
+    docker:
+      - image: cimg/python:3.8.5
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: run with plugin without splitting or parallelism
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --batch-count=2 --fail-fast 
+  fail-fast-with-splitting:
+    docker:
+      - image: cimg/python:3.8.5
+    parallelism: 3
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: run with plugin spit tests by name and set batch_count to 3
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --split-by=name --batch-count=3 --fail-fast
       - store_test_results:
           path: test-results
-          
+  fail-fast-with-splitting-high-batching:
+    docker:
+      - image: cimg/python:3.8.5
+    parallelism: 3
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: run with plugin spit tests by name and set batch_count to 100
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --split-by=name --batch-count=100 --fail-fast
+      - store_test_results:
+          path: test-results
+  fail-fast-with-splitting-low-batching:
+    docker:
+      - image: cimg/python:3.8.5
+    parallelism: 3
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: run with plugin spit tests by name and set batch_count to 2
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --split-by=name --batch-count=2 --fail-fast
+      - store_test_results:
+          path: test-results
+  fail-fast-with-splitting-5-batches:
+    docker:
+      - image: cimg/python:3.8.5
+    parallelism: 3
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - run:
+          name: run with plugin spit tests by name and set batch_count to 5
+          command: | 
+            pytest --collect-only -q | grep -e "\.py" | circleci tests run --command="xargs pytest" --split-by=name --batch-count=5 --fail-fast
+      - store_test_results:
+          path: test-results
 workflows:
   sample:
     jobs:
-      - build-and-test
-
-# VS Code Extension Version: 1.4.0
+      - pytest-no-fail-fast
+      - fail-fast-without-splitting
+      - pytest-native-fail-fast
+      - fail-fast-with-splitting
+      - fail-fast-with-splitting-high-batching
+      - fail-fast-with-splitting-low-batching
+      - fail-fast-with-splitting-5-batches
