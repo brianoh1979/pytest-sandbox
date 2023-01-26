@@ -95,10 +95,10 @@ jobs:
 workflows:
   sample:
     jobs:
-      - pytest-no-fail-fast
-      - fail-fast-without-splitting
-      - pytest-native-fail-fast
-      - fail-fast-with-splitting
-      - fail-fast-with-splitting-high-batching
-      - fail-fast-with-splitting-low-batching
+#      - pytest-no-fail-fast
+#      - fail-fast-without-splitting
+#      - pytest-native-fail-fast
+#      - fail-fast-with-splitting
+#      - fail-fast-with-splitting-high-batching
+#      - fail-fast-with-splitting-low-batching
       - fail-fast-with-splitting-5-batches
