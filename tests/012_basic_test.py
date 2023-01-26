@@ -1,5 +1,5 @@
 from other_code.services import DATA_SET_A, DATA_SET_B, DATA_SET_C
-
+import pytest
 
 def test_example():
     """
